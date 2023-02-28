@@ -8,7 +8,7 @@ const generarJWT = (uid = '') => {
         const payload = { uid };
 
         jwt.sign(payload, process.env.SECRETORPRIVATEKEY, {
-            expiresIn:'1d'
+            expiresIn:'30d'
         }, (err, token) => {
             if (err) {
                 console.log(err);
@@ -24,31 +24,27 @@ const generarJWT = (uid = '') => {
 
 }
 
- const invalidJWT = (token = '') => {
+ const renewJWT = (token = '') => {
     
     const {uid} = jwt.verify(token,process.env.SECRETORPRIVATEKEY);
     return new Promise((resolve, reject) => {
         const payload = { uid };
-
-
-        jwt.sign(payload,process.env.SECRETORPRIVATEKEY, {
-            expiresIn:'1'
-        }, (err,logout) => {
-            if (logout) {
-                
-                resolve("Token invalidado")
+        jwt.sign(payload, process.env.SECRETORPRIVATEKEY, {
+            expiresIn:'1d'
+        }, (err, token) => {
+            if (err) {
+                console.log(err);
+                reject('No se pudo generar el token')
             } else {
-                reject('No se pudo invalidar el token');
+                resolve(token);
             }
         })
         
-    
-
     })
     
 }
 
 module.exports = {
     generarJWT,
-    invalidJWT
+    renewJWT
 }

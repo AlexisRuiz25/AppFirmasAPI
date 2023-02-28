@@ -1,6 +1,7 @@
 const { response } = require("express");
 const { Firmas } = require('../models')
 const { MongoClient, ObjectId } = require("mongodb");
+const { where } = require("../models/role");
 const obtenerFirmas = async (req, res = response) => {
     //TODO recibir numeros no letras
     const { limite = 50, desde = 0 } = req.query;
@@ -31,11 +32,14 @@ const obtenerLaboratorio = async (req, res = response) => {
     });
 }
 
-//Obtener Firmas - por id populate ()
+//Obtener 
 const obtenerFirmasFecha = async (req, res = response) => {
 
-
-    const { fecha } = req.query;
+    var { fecha } = req.query;
+    
+    if(fecha==null){
+        fecha="2023-01-01"
+    }
     const fechaD=new Date (fecha)
     const { limite = 50, desde = 0 } = req.query;
     const query = { estado: true };
@@ -53,16 +57,35 @@ const obtenerFirmasFecha = async (req, res = response) => {
         firmas,
     });
 }
+
 const obtenerFirmasbyUsu = async (req, res = response) => {
     const { id } = req.params;
     
-    const { limite = 50, desde = 0 } = req.query;
+    const { limite = 50, desde = 0 
+    ,fechaS=null,fechaE=null} = req.query;
     const query = {estado: true, recomendado:{'_id':ObjectId(id)}};
-
+    
+    // fechaS-> not null and FechaE-> null = find fecha>=fechaS /
+    // fechaS-> null and FechaE-> not null = find fecha<=fechD/
+    // fechaS-> not null and FechaE-> not null = find fechaS<=fecha<=fechaE
+    // fechaS-> null and FechaE-> null = find All/
+    var whereP;
+    if(fechaS!=null&&fechaE==null){
+        whereP={$or: [{fecha: {$gte: new Date(fechaS)}},{fecha: {$eq: null}}]};    
+      // query.push({$or: [{fecha: {$gte: fechaS}},{fecha: {$eq: null}}]});    
+    }else if(fechaS==null&&fechaE!=null){
+        whereP={$or: [{fecha: {$lte: new Date(fechaE+"T23:50:21.817Z")}},{fecha: {$eq: null}}]};
+    }else if(fechaS!=null&&fechaE!=null){
+        whereP={$and: [{fecha: {$gte: new Date(fechaS)}},{fecha: {$lte: new Date(fechaE+"T23:50:21.817Z")}}]};
+    }else{
+        whereP={}
+    }    
     const [totales, firmas] = await Promise.all([
-        Firmas.countDocuments(query),
+        Firmas.countDocuments(query)
+        .where(whereP),
         Firmas.find(query)
             .skip(Number(desde))
+            .where(whereP)
             .limit(Number(limite))
     ])
     res.json({
@@ -80,13 +103,14 @@ const crearFirmas = async (req, res = response) => {
     const data  = req.body;
 
     const cedula = data.cedula.toUpperCase();
+    if(cedula!=""){
+        const FirmasDB = await Firmas.findOne({ cedula });
 
-    const FirmasDB = await Firmas.findOne({ cedula });
-
-    if (FirmasDB) {
-        return res.status(400).json({
-            msg: `El usuario ${FirmasDB.cedula},ya existe`
-        });
+        if (FirmasDB) {
+            return res.status(400).json({
+                msg: `El usuario ${FirmasDB.cedula},ya existe`
+            });
+        }
     }
 
 /*     const data = {

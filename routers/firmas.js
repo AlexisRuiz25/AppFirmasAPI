@@ -19,17 +19,18 @@ router.get('/', [
     validarCampos
 ], obtenerFirmas);
 
+
+//Obtener una Firmas por id-publico
+router.get('/findFecha', [
+    validarJWT,
+], obtenerFirmasFecha);
+
 //Obtener una Firmas por id-publico
 router.get('/:cedula', [
     check('cedula').custom(existeFirmasPorId),
     validarCampos
 ], obtenerLaboratorio);
 
-//Obtener una Firmas por id-publico
-router.get('/fech', [
-    validarJWT,
-    validarCampos
-], obtenerFirmasFecha);
 //firmasbyRecomendao
 router.get('/findUsu/:id', [
     //check('id', 'No es un id de Mongo válido').isMongoId(),

@@ -30,6 +30,12 @@ const FirmasSchema = Schema({
     },
     fecha:{
         type:Date
+    },
+    lonLat:{
+        type:String
+    },
+    codePostal:{
+        type:Number
     }
 
 });

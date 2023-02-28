@@ -1,7 +1,7 @@
 const { request, response } = require('express');
 const bcryptjs = require('bcryptjs');
 const Usuario = require('../models/usuario');
-const { generarJWT, invalidJWT } = require('../helpers/generar-jwt');
+const { generarJWT, renewJWT } = require('../helpers/generar-jwt');
 const { googleVerify } = require('../helpers/google-verify');
 const { json } = require('body-parser');
 
@@ -103,28 +103,11 @@ const googleSignIn = async (req, res = response) => {
 
 }
 
-const logout=async (req= request, res = response ) => {
-   
-    const token = req.header('x-token');
-
-    const result = await invalidJWT( token );
-    res.json({
-        result,
-        
-    })
-}
-
 const revalidarToken = async (req= request, res = response ) => {
-   
-    const {nombre,id,correo} = req.usuario;
-
-    const token = await generarJWT( uid=id, nombre );
+    const token = req.header('x-token');
+    const tokenN = await renewJWT(token);
     res.json({
-        ok: true,
-        uid,
-        nombre,
-        correo,
-        token, 
+        tokenN, 
     })
 }
 
@@ -132,5 +115,4 @@ module.exports = {
     login,
     googleSignIn,
     revalidarToken,
-    logout
 }
