@@ -27,6 +27,25 @@ const ususariosGet = async(req=request, res = response) => {
     });
 }
 
+const ususariosGetLIKE = async(req=request, res = response) => {
+    const {field} = req.params;
+    //TODO recibir numeros no letras
+    const{limite=15,desde=0} = req.query; 
+    const query={estado:true, $or:[{nombre: { $regex: "^"+field,$options:"i"}},{correo: { $regex: "^"+field,$options:"i"}}]};
+    
+    const [total,usuarios] = await Promise.all([
+        Usuario.countDocuments(query),
+        Usuario.find(query) 
+        .skip(Number(desde))
+        .limit(Number(limite))
+
+    ])
+
+    res.json({
+        total,
+        usuarios
+    });
+}
 ///////////////////////////////////////////////////////////
 const usuariosPut = async(req, res = response) => {
 
@@ -34,7 +53,7 @@ const usuariosPut = async(req, res = response) => {
     const {id} = req.params;
     const {_id,password,google,correo,...resto}= req.body;
     //Validar contra datos de base de datos
-    if(password)
+    if(password && password!="")
     {
     //Encriptar la contraseña
     const salt = bcryptjs.genSaltSync();
@@ -44,7 +63,7 @@ const usuariosPut = async(req, res = response) => {
     const usuario = await Usuario.findByIdAndUpdate(id,resto);
 
     res.json({
-        msg: 'put Controlador',
+        msg: 'Actualizado',
         usuario,
     });
 }
@@ -68,12 +87,11 @@ const usuariosPost = async (req, res = response) => {
 const usuariosDelete = async (req, res=response) => {
     const {id}= req.params;
     //Se obtiene el usuario autenticado y el borrado
-    const usuario = await Usuario.findByIdAndUpdate(id,{estado:false});
-    const usuarioAutenticado = req.usuario;
+    
+    const usuario = await Usuario.findByIdAndDelete(id);
 
-    res.json({
-        usuario,
-        usuarioAutenticado
+    res.status(200).json({
+        usuario
     });
 }
 ///////////////////////////////////////////////////////////
@@ -82,4 +100,5 @@ module.exports = {
     usuariosPut,
     usuariosPost,
     usuariosDelete,
+    ususariosGetLIKE
 }

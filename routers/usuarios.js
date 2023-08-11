@@ -13,18 +13,21 @@ const { esRoleVaido, emailExiste, existeUsuarioPorId } = require('../helpers/db-
 const { ususariosGet,
     usuariosPut,
     usuariosPost,
-    usuariosDelete } = require('../controllers/usuarios');
+    usuariosDelete,
+    ususariosGetLIKE } = require('../controllers/usuarios');
 
 const router = Router();
 
 router.get('/', ususariosGet);
+router.get('/:field', ususariosGetLIKE);
 //////////////////////////////////////////////////
 router.put('/:id', [
 
     check('id', 'No es un ID valido').isMongoId(),
     check('id').custom(existeUsuarioPorId),
     check('rol').custom(esRoleVaido),
-    validarCampos
+    validarCampos,
+    validarJWT
 ], usuariosPut);
 //////////////////////////////////////////////////
 router.post('/',
@@ -43,7 +46,7 @@ router.delete('/:id',
 [
     validarJWT,
 //    esAdminRole, Solo si el admin quiere borrar
-    tieneRole('ADMIN_ROLE','USER_ROLE'),
+    tieneRole('ADMIN_ROLE','VOLUNTARIO_ROLE'),
     check('id', 'No es un ID valido').isMongoId(),
     check('id').custom(existeUsuarioPorId),
     validarCampos 

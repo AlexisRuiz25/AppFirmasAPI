@@ -128,13 +128,9 @@ const actualizarFirmas = async (req, res = response) => {
     const { id } = req.params;
     const {...data } = req.body;
 
-    if (data.nombre) {
-        data.nombre = data.nombre.toUpperCase();
-        data.firmas = data.firmas;
-        console.log(data.nombre,data.firmas);
-    }
+   
 
-    const firmas = await Firmas.findByIdAndUpdate(id, data,{ new: true });
+    const firmas = await Firmas.findByIdAndUpdate(id, data);
     res.json(firmas);
 }
 
@@ -142,7 +138,7 @@ const actualizarFirmas = async (req, res = response) => {
 const borrarFirmas = async (req, res = response) => {
     const { id } = req.params;
     //const FirmasBorrada = await Firmas.findByIdAndUpdate(id, {estado:false },{ new: true });
-    const firmasBorrada = await Firmas.findOneAndRemove(id);
+    const firmasBorrada = await Firmas.findByIdAndDelete(id);
     res.json(firmasBorrada);
 
 }

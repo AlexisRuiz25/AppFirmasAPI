@@ -50,7 +50,7 @@ router.put('/:id', [
     validarJWT,
 //    esAdminRole,
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('id').custom(existeFirmasPorId),
+    check('id'),
     validarCampos
 ], actualizarFirmas);
  
